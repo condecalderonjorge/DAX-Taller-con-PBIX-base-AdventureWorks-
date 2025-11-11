@@ -7,8 +7,8 @@ Repositorio de medidas DAX y guía de mantenimiento del archivo `Taller DAX arch
 ## Contenidos
 - `new_measures.dax`: medidas realizadas.
 - `clean_measures.dax`: versión normalizada y mejoras.
-- `Taller DAX archivo base`: archivo pbi base de AdventureWorks.
-- `Taller DAX archivo base con medidas`: archivo pbi con las medidas importadas.
+- `Taller DAX archivo base.pbix`: archivo pbi base de AdventureWorks.
+- `Taller DAX cargado.pbix`: archivo pbi con las medidas importadas.
 
 
 ## Requisitos

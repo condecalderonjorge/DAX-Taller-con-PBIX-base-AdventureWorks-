@@ -1,8 +1,15 @@
-# DAX — Taller con PBIX base (AdventureWorks)
+# 🧭 DAX — Taller con PBIX base (AdventureWorks)
 
+**Autor:** Jorge Conde Calderón  
+**Tecnologías:** Power BI · DAX · Excel  
+**Fecha:** 2025
 
+---
+
+## 🎯 Objetivo del proyecto
 Repositorio de medidas DAX y guía de mantenimiento del archivo `Taller DAX archivo base.pbix`.
 
+---
 
 ## Contenidos
 - `new_measures.dax`: medidas realizadas.

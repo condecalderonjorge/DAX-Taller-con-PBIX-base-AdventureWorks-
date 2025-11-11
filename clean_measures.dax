@@ -1,0 +1,74 @@
+DEFINE
+"Original", [Ventas Totales],
+"USD", [Ventas Totales en USD],
+"Mediana", [Mediana Venta]
+),
+[Ventas Totales]
+)
+MEASURE 'DAX'[Selector Color] =
+IF(HASONEVALUE(_SEL[Selector]),
+SWITCH(VALUES(_SEL[Selector]),
+"Original", "#118DFF",
+"USD", "#FF930F",
+"Mediana", "#258F53"
+),
+"#118DFF"
+)
+
+
+// ====== Time intelligence ======
+MEASURE 'DAX'[YTD] = TOTALYTD([Ventas Totales], DimDates[FullDateAlternateKey])
+
+
+// YTD del año anterior (más típico)
+MEASURE 'DAX'[YTD PY] = CALCULATE([YTD], SAMEPERIODLASTYEAR(DimDates[FullDateAlternateKey]))
+
+
+// Acumulado manual por período numérico (si mantienes PERIOD)
+MEASURE 'DAX'[YTD (PERIOD)] =
+VAR PM = MAX(DimDates[PERIOD])
+RETURN CALCULATE([Ventas Totales], FILTER(ALL(DimDates[PERIOD]), DimDates[PERIOD] <= PM))
+
+
+MEASURE 'DAX'[Mes Anterior] =
+// Alternativa robusta a usar PERIOD: desplaza 1 mes natural
+CALCULATE([Ventas Totales], DATEADD(DimDates[FullDateAlternateKey], -1, MONTH))
+
+
+// ====== Comparativas por año ======
+MEASURE 'DAX'[Ventas 2011] = CALCULATE([Ventas Totales], DimDates[CalendarYear] = 2011)
+MEASURE 'DAX'[Ventas 2012] = CALCULATE([Ventas Totales], DimDates[CalendarYear] = 2012)
+MEASURE 'DAX'[Ventas 2012 (Ship)] = CALCULATE([Ventas Totales], DimDates[CalendarYear] = 2012, USERELATIONSHIP(DimDates[DateKey], FactSales[ShipDateKey]))
+
+
+MEASURE 'DAX'[Evolución % 2012 vs 2011] =
+VAR v12 = [Ventas 2012]
+VAR v11 = [Ventas 2011]
+RETURN IF(ISBLANK(v12) || ISBLANK(v11), BLANK(), DIVIDE(v12 - v11, v11))
+
+
+MEASURE 'DAX'[Evolución Color] = IF([Evolución % 2012 vs 2011] > 0, "#0CBE44", "#F90A0A")
+MEASURE 'DAX'[Evolución Texto] =
+IF(ISBLANK([Ventas 2012]), "No hay Datos", "La variación interanual ha sido: " & FORMAT([Evolución % 2012 vs 2011], "0.00%"))
+
+
+// Rango territorial
+MEASURE 'DAX'[Ventas Europa+Pacífico] = CALCULATE([Ventas Totales], DimTerritory[SalesTerritoryGroup] IN {"Europe", "Pacific"})
+MEASURE 'DAX'[Ventas sin Europa ni Pacífico] = CALCULATE([Ventas Totales], NOT DimTerritory[SalesTerritoryGroup] IN {"Europe", "Pacific"})
+MEASURE 'DAX'[Ventas UK] = CALCULATE([Ventas Totales], DimTerritory[SalesTerritoryCountry] = "United Kingdom")
+MEASURE 'DAX'[Ventas UK (2012)] = CALCULATE([Ventas Totales], DimTerritory[SalesTerritoryCountry] = "United Kingdom", DimDates[DateKey] >= 20120101, DimDates[DateKey] <= 20121231)
+
+
+// ====== Colores por umbrales (sin solapes)
+MEASURE 'DAX'[Color Evolución (umbral)] =
+SWITCH(TRUE(),
+[Evolución % 2012 vs 2011] >= 0.10, "#0CBE44", // ≥ +10% verde
+[Evolución % 2012 vs 2011] > 0.00, "#E69B19", // (0,10%) ámbar
+[Evolución % 2012 vs 2011] <= 0.00, "#F90A0A" // ≤ 0 rojo
+)
+
+
+// ====== Año actual vs pasado
+MEASURE 'DAX'[Año Actual] = YEAR(NOW())
+MEASURE 'DAX'[Ventas CY] = CALCULATE([Ventas Totales], DimDates[CalendarYear] = YEAR(NOW()))
+MEASURE 'DAX'[Ventas PY] = CALCULATE([Ventas Totales], DimDates[CalendarYear] = YEAR(NOW()) - 1)
